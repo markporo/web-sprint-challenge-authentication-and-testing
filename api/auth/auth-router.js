@@ -1,7 +1,25 @@
+//invoke the router method from the express library
 const router = require('express').Router();
 
-router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+//require bcrypt library
+const bcrypt = require('bcryptjs')
+
+// middleware functions from `restricted.js`.
+const restricted = require('../middleware/restricted')
+
+// access the model functions? in this case hard coded jokes
+const dadJokes = require('../jokes/jokes-data')
+
+
+
+router.post('/register', restricted, (req, res) => {
+  //res.end('implement register, please!');
+
+  // hash password!
+  const hash = bcrypt.hashSync(req.body.password, 8)
+  //assign hash of password to the user's password
+  //req.body.password = hash;
+
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
