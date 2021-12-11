@@ -7,48 +7,69 @@ const bcrypt = require('bcryptjs')
 // middleware functions from `restricted.js`.
 const restricted = require('../middleware/restricted')
 
-// access the model functions? in this case hard coded jokes
+//middleware from auth-middleware.js
+const { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree } = require('../auth/auth-middleware')
+
+// access the  hard coded jokes
 const dadJokes = require('../jokes/jokes-data')
 
+// access the usersModel
+const usersModel = require('../users/users-model')
 
-
-router.post('/register', restricted, (req, res) => {
+//REGISTER A USER -- HASH THEIR PW -- ADD TO DB
+router.post('/register', checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree, (req, res) => {
   //res.end('implement register, please!');
 
   // hash password!
   const hash = bcrypt.hashSync(req.body.password, 8)
   //assign hash of password to the user's password
-  //req.body.password = hash;
+  req.body.password = hash;
 
-  /*
-    IMPLEMENT
-    You are welcome to build additional middlewares to help with the endpoint's functionality.
-    DO NOT EXCEED 2^8 ROUNDS OF HASHING!
-
-    1- In order to register a new account the client must provide `username` and `password`:
-      {
-        "username": "Captain Marvel", // must not exist already in the `users` table
-        "password": "foobar"          // needs to be hashed before it's saved
-      }
-
-    2- On SUCCESSFUL registration,
-      the response body should have `id`, `username` and `password`:
-      {
-        "id": 1,
-        "username": "Captain Marvel",
-        "password": "2a$08$jG.wIGR2S4hxuyWNcBf9MuoC4y0dNy7qC/LbmtuFBSdIhWks2LhpG"
-      }
-
-    3- On FAILED registration due to `username` or `password` missing from the request body,
-      the response body should include a string exactly as follows: "username and password required".
-
-    4- On FAILED registration due to the `username` being taken,
-      the response body should include a string exactly as follows: "username taken".
-  */
+  usersModel.add({ username: req.body.username, password: hash })
+    .then(newUser => {
+      res.status(201).json(newUser)
+    })
+    .catch(() => {
+      res.status(500).json({ message: "The User could not be added to the DB." })
+    })
 });
 
-router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+
+/*
+  IMPLEMENT
+  You are welcome to build additional middlewares to help with the endpoint's functionality.
+  DO NOT EXCEED 2^8 ROUNDS OF HASHING!
+
+  1- In order to register a new account the client must provide `username` and `password`:
+    {
+      "username": "Captain Marvel", // must not exist already in the `users` table
+      "password": "foobar"          // needs to be hashed before it's saved
+    }
+
+  2- On SUCCESSFUL registration,
+    the response body should have `id`, `username` and `password`:
+    {
+      "id": 1,
+      "username": "Captain Marvel",
+      "password": "2a$08$jG.wIGR2S4hxuyWNcBf9MuoC4y0dNy7qC/LbmtuFBSdIhWks2LhpG"
+    }
+
+  3- On FAILED registration due to `username` or `password` missing from the request body,
+    the response body should include a string exactly as follows: "username and password required".
+
+  4- On FAILED registration due to the `username` being taken,
+    the response body should include a string exactly as follows: "username taken".
+*/
+
+
+router.post('/login', restricted, (req, res) => {
+  //res.end('implement login, please!');
+
+
+
+
+
+
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
