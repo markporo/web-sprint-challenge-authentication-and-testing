@@ -1,17 +1,24 @@
 //invoke the router method from the express library
 const router = require('express').Router();
 
+//
+const { JWT_SECRET } = require("../secrets"); // use this secret!
+
+
 //require bcrypt library
 const bcrypt = require('bcryptjs')
+
+//require jwt
+const jwt = require('jsonwebtoken');
 
 // middleware functions from `restricted.js`.
 const restricted = require('../middleware/restricted')
 
 //middleware from auth-middleware.js
-const { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree } = require('../auth/auth-middleware')
+const { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree, checkUsernameExists } = require('../auth/auth-middleware')
 
-// access the  hard coded jokes
-const dadJokes = require('../jokes/jokes-data')
+// access the  hard coded jokes - don't need for this
+//const dadJokes = require('../jokes/jokes-data')
 
 // access the usersModel
 const usersModel = require('../users/users-model')
@@ -62,12 +69,18 @@ router.post('/register', checkPasswordLength, passwordAndUsernameInReqBody, chec
 */
 
 
-router.post('/login', restricted, (req, res) => {
+router.post('/login', passwordAndUsernameInReqBody, checkUsernameExists, restricted, (req, res) => {
   //res.end('implement login, please!');
 
-
-
-
+  if (bcrypt.compareSync(req.body.password, req.user.password)) {
+    const token = generateToken(req.user);
+    res.status(200).json({
+      "message": `welcome, ${req.user.username}`,
+      token,
+    })
+  } else {
+    res.status(401).json({ "message": 'Invalid Credentials' });
+  }
 
 
   /*
@@ -94,5 +107,21 @@ router.post('/login', restricted, (req, res) => {
       the response body should include a string exactly as follows: "invalid credentials".
   */
 });
+
+function generateToken(user) {
+  const payload = {
+    subject: user.id, // sub property in header of the token; normally user id
+    username: user.username,
+    //...other data put here --never any sensitive information because
+    //this token can be easily translated
+  }
+  //const secret = JWT_SECRET  //'this sectret is how we sign the token only the server knows it';
+  const options = {
+    expiresIn: '1d', //1d
+    // we can use many other options if we want
+  }
+
+  return jwt.sign(payload, JWT_SECRET, options)
+}
 
 module.exports = router;

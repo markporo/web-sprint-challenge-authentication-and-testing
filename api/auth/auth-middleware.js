@@ -48,7 +48,24 @@ function checkPasswordLength(req, res, next) {
     }
 }
 
+// 4- On FAILED login due to `username` not existing in the db, or `password` being incorrect,
+// the response body should include a string exactly as follows: "invalid credentials".
+async function checkUsernameExists(req, res, next) {
+    try {
+        const [user] = await usersModel.findBy({ username: req.body.username })
+        if (!user) {
+            res.status(401).json({ "message": "invalid credentials" })
+        } else {
+            req.user = user; // this way we already have the the pasword on the 
+            //request object when it comes time to compare it
+            next()
+        }
+    } catch (err) {
+        res.status(500).json({ "message": "An error happened in the DB" })
+    }
+}
+
 // Add these to the `exports` object so they can be required in other modules
-module.exports = { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree }
+module.exports = { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree, checkUsernameExists }
 
 
