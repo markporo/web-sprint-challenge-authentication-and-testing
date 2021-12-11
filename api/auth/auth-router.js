@@ -11,8 +11,6 @@ const bcrypt = require('bcryptjs')
 //require jwt
 const jwt = require('jsonwebtoken');
 
-// middleware functions from `restricted.js`.
-const restricted = require('../middleware/restricted')
 
 //middleware from auth-middleware.js
 const { checkPasswordLength, passwordAndUsernameInReqBody, checkUsernameFree, checkUsernameExists } = require('../auth/auth-middleware')
@@ -69,7 +67,7 @@ router.post('/register', checkPasswordLength, passwordAndUsernameInReqBody, chec
 */
 
 
-router.post('/login', passwordAndUsernameInReqBody, checkUsernameExists, restricted, (req, res) => {
+router.post('/login', passwordAndUsernameInReqBody, checkUsernameExists, (req, res) => {
   //res.end('implement login, please!');
 
   if (bcrypt.compareSync(req.body.password, req.user.password)) {
