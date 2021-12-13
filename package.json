@@ -12,6 +12,9 @@
     "type": "git",
     "url": "git+https://github.com/BloomInstituteOfTechnology/web-sprint-challenge-authentication-and-testing.git"
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
