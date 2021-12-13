@@ -144,13 +144,13 @@ describe('auth endpoints', () => {
     })
 
     it("gives a 200 status on success", async () => {
-      const { body: { token }, } = await (await request(server).post("/api/auth/login")).send({
+      const { body: { token }, } = await request(server).post("/api/auth/login").send({
         "username": "Bob Jones",
         "password": "University"
       })
       const response = await request(server)
         .get("/api/jokes")
-        .set("Authoriaztion", token);
+        .set("Authorization", token);
       expect(response.status).toBe(200)
     })
 
