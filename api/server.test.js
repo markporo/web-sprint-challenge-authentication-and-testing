@@ -130,6 +130,34 @@ describe('auth endpoints', () => {
       })
       expect(response.body).not.toHaveProperty("token")
     })
+  })
+
+
+
+  describe("jokes endpoint once user is logged in", () => {
+    beforeEach(async () => {
+      await db("users").truncate()
+      await request(server).post("/api/auth/register").send({
+        "username": "Bob Jones",
+        "password": "University"
+      })
+    })
+
+    it("gives a 200 status on success", async () => {
+      const { body: { token }, } = await (await request(server).post("/api/auth/login")).send({
+        "username": "Bob Jones",
+        "password": "University"
+      })
+      const response = await request(server)
+        .get("/api/jokes")
+        .set("Authoriaztion", token);
+      expect(response.status).toBe(200)
+    })
+
+    it("requires token from logged in user", async () => {
+      const response = await request(server).get("/api/jokes")
+      expect(response.body.message).toBe("token required");
+    })
 
   })
 });
